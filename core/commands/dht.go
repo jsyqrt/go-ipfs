@@ -561,7 +561,11 @@ NOTE: A value may not exceed 2048 bytes.
 			return err
 		}
 
-		data := req.Arguments[1]
+		dataInBase64 := req.Arguments[1]
+		data, err := base64.URLEncoding.DecodeString(dataInBase64)
+		if err != nil {
+			return err
+		}
 
 		ctx, cancel := context.WithCancel(req.Context)
 		ctx, events := routing.RegisterForQueryEvents(ctx)
