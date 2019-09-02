@@ -83,13 +83,23 @@ type p2pPSRoutingIn struct {
 	PubSub          *pubsub.PubSub `optional:"true"`
 }
 
+type mockValidator struct {
+	realValidator record.Validator
+}
+
+func (mv *mockValidator) Validate(key string, value []byte) error { return nil }
+func (mv *mockValidator) Select(key string, values [][]byte) (int, error) {
+	return mv.realValidator.Select(key, values)
+}
+
 func PubsubRouter(mctx helpers.MetricsCtx, lc fx.Lifecycle, in p2pPSRoutingIn) (p2pRouterOut, *namesys.PubsubValueStore) {
+
 	psRouter := namesys.NewPubsubValueStore(
 		helpers.LifecycleCtx(mctx, lc),
 		in.Host,
 		in.BaseIpfsRouting,
 		in.PubSub,
-		in.Validator,
+		&mockValidator{in.Validator},
 	)
 
 	return p2pRouterOut{

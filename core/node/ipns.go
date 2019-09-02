@@ -18,11 +18,20 @@ import (
 
 const DefaultIpnsCacheSize = 128
 
+type mockValidator struct {
+	realValidator record.Validator
+}
+
+func (mv *mockValidator) Validate(key string, value []byte) error { return nil }
+func (mv *mockValidator) Select(key string, values [][]byte) (int, error) {
+	return mv.realValidator.Select(key, values)
+}
+
 // RecordValidator provides namesys compatible routing record validator
 func RecordValidator(ps peerstore.Peerstore) record.Validator {
 	return record.NamespacedValidator{
 		"pk":   record.PublicKeyValidator{},
-		"ipns": ipns.Validator{KeyBook: ps},
+		"ipns": &mockValidator{ipns.Validator{KeyBook: ps}},
 	}
 }
 
